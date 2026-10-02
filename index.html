@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Content Idea Editorial Calendar</title>
+<script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 min-h-screen">
+<div class="max-w-6xl mx-auto px-4 py-8">
+  <div class="flex items-center gap-3 mb-2">
+    <span class="text-3xl" aria-hidden="true">📅</span>
+    <h1 class="text-3xl font-bold text-gray-800">Content Idea Editorial Calendar</h1>
+  </div>
+  <p class="text-gray-500 mb-6 ml-12">ブログ・SNSコンテンツのアイデアを月次カレンダーで管理します</p>
+
+  <!-- フィルターバー -->
+  <div class="bg-white rounded-2xl shadow px-5 py-3 mb-4 flex flex-wrap gap-3 items-center">
+    <span class="text-sm font-semibold text-gray-600">フィルター:</span>
+    <div class="flex gap-1 flex-wrap">
+      <button onclick="setFilter('platform', '')" id="pf-all" class="filter-chip active-chip text-xs px-3 py-1 rounded-full" aria-pressed="true">全プラットフォーム</button>
+      <button onclick="setFilter('platform', 'Blog')" id="pf-Blog" class="filter-chip inactive-chip text-xs px-3 py-1 rounded-full" aria-pressed="false">Blog</button>
+      <button onclick="setFilter('platform', 'Twitter')" id="pf-Twitter" class="filter-chip inactive-chip text-xs px-3 py-1 rounded-full" aria-pressed="false">Twitter/X</button>
+      <button onclick="setFilter('platform', 'YouTube')" id="pf-YouTube" class="filter-chip inactive-chip text-xs px-3 py-1 rounded-full" aria-pressed="false">YouTube</button>
+      <button onclick="setFilter('platform', 'Instagram')" id="pf-Instagram" class="filter-chip inactive-chip text-xs px-3 py-1 rounded-full" aria-pressed="false">Instagram</button>
+    </div>
+    <div class="flex gap-1 flex-wrap ml-2">
+      <button onclick="setFilter('status', '')" id="sf-all" class="filter-chip active-chip text-xs px-3 py-1 rounded-full" aria-pressed="true">全ステータス</button>
+      <button onclick="setFilter('status', 'Idea')" id="sf-Idea" class="filter-chip inactive-chip text-xs px-3 py-1 rounded-full" aria-pressed="false">Idea</button>
+      <button onclick="setFilter('status', 'Draft')" id="sf-Draft" class="filter-chip inactive-chip text-xs px-3 py-1 rounded-full" aria-pressed="false">Draft</button>
+      <button onclick="setFilter('status', 'Published')" id="sf-Published" class="filter-chip inactive-chip text-xs px-3 py-1 rounded-full" aria-pressed="false">Published</button>
+    </div>
+    <button onclick="toggleView()" id="viewToggle" class="ml-auto bg-indigo-100 text-indigo-700 text-xs px-4 py-1.5 rounded-full font-semibold">カレンダービュー</button>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+    <!-- 追加フォーム -->
+    <div class="bg-white rounded-2xl shadow p-5">
+      <h2 class="text-base font-semibold text-gray-700 mb-3">アイデアを追加</h2>
+      <div class="space-y-3">
+        <div>
+          <label for="contentTitle" class="block text-xs font-medium text-gray-600 mb-1">タイトル *</label>
+          <input id="contentTitle" type="text" placeholder="記事タイトル" class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400" aria-label="コンテンツタイトル">
+        </div>
+        <div>
+          <label for="contentPlatform" class="block text-xs font-medium text-gray-600 mb-1">プラットフォーム</label>
+          <select id="contentPlatform" class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400" aria-label="プラットフォーム">
+            <option>Blog</option>
+            <option>Twitter</option>
+            <option>YouTube</option>
+            <option>Instagram</option>
+          </select>
+        </div>
+        <div>
+          <label for="contentStatus" class="block text-xs font-medium text-gray-600 mb-1">ステータス</label>
+          <select id="contentStatus" class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400" aria-label="ステータス">
+            <option>Idea</option>
+            <option>Draft</option>
+            <option>Published</option>
+          </select>
+        </div>
+        <div>
+          <label for="contentDate" class="block text-xs font-medium text-gray-600 mb-1">公開予定日</label>
+          <input id="contentDate" type="date" class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400" aria-label="公開予定日">
+        </div>
+        <div>
+          <label for="contentTags" class="block text-xs font-medium text-gray-600 mb-1">タグ（カンマ区切り）</label>
+          <input id="contentTags" type="text" placeholder="SEO, マーケティング" class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400" aria-label="タグ">
+        </div>
+        <button onclick="addContent()" class="w-full bg-indigo-500 hover:bg-indigo-600 text-white font-bold py-2 rounded-xl transition" aria-label="追加">追加する</button>
+        <button onclick="loadSample()" class="w-full bg-gray-100 hover:bg-gray-200 text-gray-600 text-xs py-1.5 rounded-xl" aria-label="サンプルデータ">サンプルデータ</button>
+      </div>
+    </div>
+
+    <!-- メインコンテンツ -->
+    <div class="lg:col-span-3">
+      <!-- カレンダービュー -->
+      <div id="calendarView" class="bg-white rounded-2xl shadow p-4 mb-4 hidden">
+        <div class="flex items-center justify-between mb-3">
+          <button onclick="prevMonth()" class="text-gray-500 hover:text-indigo-600 p-1 rounded" aria-label="前月">◀</button>
+          <h3 id="calendarTitle" class="font-bold text-gray-700"></h3>
+          <button onclick="nextMonth()" class="text-gray-500 hover:text-indigo-600 p-1 rounded" aria-label="翌月">▶</button>
+        </div>
+        <div id="calendarGrid"></div>
+      </div>
+
+      <!-- リストビュー -->
+      <div id="listView" class="space-y-2">
+        <div id="contentList"></div>
+        <div id="emptyState" class="hidden bg-white rounded-2xl shadow p-10 text-center text-gray-400">
+          <div class="text-4xl mb-3" aria-hidden="true">📝</div>
+          <p>コンテンツアイデアを追加してください</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+.filter-chip { transition: all 0.2s; }
+.active-chip { background: #6366F1; color: white; }
+.inactive-chip { background: #F3F4F6; color: #6B7280; }
+.cal-day { min-height: 70px; }
+</style>
+
+<script>
+const PLATFORM_COLORS = {
+  Blog: 'bg-blue-100 text-blue-700',
+  Twitter: 'bg-sky-100 text-sky-700',
+  YouTube: 'bg-red-100 text-red-700',
+  Instagram: 'bg-pink-100 text-pink-700'
+};
+const STATUS_COLORS = {
+  Idea: 'bg-gray-100 text-gray-600',
+  Draft: 'bg-yellow-100 text-yellow-700',
+  Published: 'bg-green-100 text-green-700'
+};
+
+let contents = [];
+try { contents = JSON.parse(localStorage.getItem('editorial_calendar') || '[]'); } catch(e) { contents = []; }
+let filters = { platform: '', status: '' };
+let viewMode = 'list';
+let calendarYear = new Date().getFullYear();
+let calendarMonth = new Date().getMonth();
+
+function save() { localStorage.setItem('editorial_calendar', JSON.stringify(contents)); }
+
+function addContent() {
+  const title = document.getElementById('contentTitle').value.trim();
+  if (!title) { alert('タイトルを入力してください'); return; }
+  contents.push({
+    id: Date.now(),
+    title,
+    platform: document.getElementById('contentPlatform').value,
+    status: document.getElementById('contentStatus').value,
+    date: document.getElementById('contentDate').value,
+    tags: document.getElementById('contentTags').value.split(',').map(t=>t.trim()).filter(Boolean)
+  });
+  document.getElementById('contentTitle').value = '';
+  document.getElementById('contentDate').value = '';
+  document.getElementById('contentTags').value = '';
+  save(); render();
+}
+
+function deleteContent(id) { contents = contents.filter(c => c.id !== id); save(); render(); }
+
+function updateStatus(id, status) {
+  const c = contents.find(c => c.id === id);
+  if (c) { c.status = status; save(); render(); }
+}
+
+function loadSample() {
+  const base = new Date();
+  const fmt = (y,m,d) => `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+  const m = base.getMonth(), y = base.getFullYear();
+  contents = [
+    {id:1, title:'React 18の新機能まとめ', platform:'Blog', status:'Published', date:fmt(y,m,5), tags:['React','フロントエンド']},
+    {id:2, title:'TypeScript入門ガイド', platform:'Blog', status:'Draft', date:fmt(y,m,12), tags:['TypeScript']},
+    {id:3, title:'今週の技術ニュース', platform:'Twitter', status:'Published', date:fmt(y,m,8), tags:['テック']},
+    {id:4, title:'VSCodeおすすめ拡張機能Top10', platform:'YouTube', status:'Idea', date:fmt(y,m,20), tags:['VSCode','ツール']},
+    {id:5, title:'朝のコーディング環境', platform:'Instagram', status:'Idea', date:fmt(y,m,15), tags:['ライフスタイル']},
+    {id:6, title:'AIツール活用術2026', platform:'Blog', status:'Draft', date:fmt(y,m,25), tags:['AI','生産性']},
+    {id:7, title:'Next.js 15 チュートリアル', platform:'YouTube', status:'Idea', date:fmt(y,m+1,3), tags:['Next.js']},
+  ];
+  save(); render();
+}
+
+function setFilter(type, value) {
+  filters[type] = value;
+  const pfx = type === 'platform' ? 'pf' : 'sf';
+  const vals = type === 'platform' ? ['', 'Blog', 'Twitter', 'YouTube', 'Instagram'] : ['', 'Idea', 'Draft', 'Published'];
+  const labels = type === 'platform' ? ['all', 'Blog', 'Twitter', 'YouTube', 'Instagram'] : ['all', 'Idea', 'Draft', 'Published'];
+  vals.forEach((v, i) => {
+    const btn = document.getElementById(pfx + '-' + labels[i]);
+    if (!btn) return;
+    btn.className = 'filter-chip ' + (v === value ? 'active-chip' : 'inactive-chip') + ' text-xs px-3 py-1 rounded-full';
+    btn.setAttribute('aria-pressed', v === value ? 'true' : 'false');
+  });
+  render();
+}
+
+function toggleView() {
+  viewMode = viewMode === 'list' ? 'calendar' : 'list';
+  document.getElementById('viewToggle').textContent = viewMode === 'list' ? 'カレンダービュー' : 'リストビュー';
+  document.getElementById('calendarView').classList.toggle('hidden', viewMode !== 'calendar');
+  document.getElementById('listView').classList.toggle('hidden', viewMode === 'calendar');
+  render();
+}
+
+function prevMonth() { calendarMonth--; if (calendarMonth < 0) { calendarMonth = 11; calendarYear--; } renderCalendar(); }
+function nextMonth() { calendarMonth++; if (calendarMonth > 11) { calendarMonth = 0; calendarYear++; } renderCalendar(); }
+
+function getFiltered() {
+  return contents.filter(c => {
+    if (filters.platform && c.platform !== filters.platform) return false;
+    if (filters.status && c.status !== filters.status) return false;
+    return true;
+  });
+}
+
+function render() {
+  if (viewMode === 'list') renderList();
+  else renderCalendar();
+}
+
+function renderList() {
+  const filtered = getFiltered().sort((a, b) => {
+    if (!a.date && !b.date) return 0;
+    if (!a.date) return 1; if (!b.date) return -1;
+    return a.date.localeCompare(b.date);
+  });
+  const list = document.getElementById('contentList');
+  const empty = document.getElementById('emptyState');
+  list.innerHTML = '';
+  if (filtered.length === 0) { empty.classList.remove('hidden'); return; }
+  empty.classList.add('hidden');
+
+  filtered.forEach(c => {
+    const card = document.createElement('div');
+    card.className = 'bg-white rounded-2xl shadow px-4 py-3 flex items-start gap-3 hover:shadow-md transition';
+    const left = document.createElement('div');
+    left.className = 'flex-1 min-w-0';
+    const row1 = document.createElement('div');
+    row1.className = 'flex items-center gap-2 flex-wrap mb-1';
+    const title = document.createElement('span');
+    title.className = 'font-semibold text-gray-700';
+    title.textContent = c.title;
+    const pfBadge = document.createElement('span');
+    pfBadge.className = 'text-xs px-2 py-0.5 rounded-full ' + (PLATFORM_COLORS[c.platform] || 'bg-gray-100 text-gray-600');
+    pfBadge.textContent = c.platform;
+    const stBadge = document.createElement('span');
+    stBadge.className = 'text-xs px-2 py-0.5 rounded-full ' + (STATUS_COLORS[c.status] || 'bg-gray-100 text-gray-600');
+    stBadge.textContent = c.status;
+    row1.appendChild(title); row1.appendChild(pfBadge); row1.appendChild(stBadge);
+    const row2 = document.createElement('div');
+    row2.className = 'flex items-center gap-2 flex-wrap text-xs text-gray-400';
+    if (c.date) {
+      const dateSpan = document.createElement('span');
+      dateSpan.textContent = '📅 ' + c.date;
+      row2.appendChild(dateSpan);
+    }
+    c.tags.forEach(tag => {
+      const t = document.createElement('span');
+      t.className = 'bg-indigo-50 text-indigo-500 px-2 py-0.5 rounded-full';
+      t.textContent = '#' + tag;
+      row2.appendChild(t);
+    });
+    left.appendChild(row1); left.appendChild(row2);
+    const right = document.createElement('div');
+    right.className = 'flex items-center gap-2 shrink-0';
+    const sel = document.createElement('select');
+    sel.className = 'text-xs border rounded-lg px-2 py-1 focus:outline-none';
+    sel.setAttribute('aria-label', c.title + ' ステータス変更');
+    ['Idea','Draft','Published'].forEach(s => {
+      const opt = document.createElement('option');
+      opt.value = s; opt.textContent = s;
+      if (s === c.status) opt.selected = true;
+      sel.appendChild(opt);
+    });
+    sel.onchange = () => updateStatus(c.id, sel.value);
+    const del = document.createElement('button');
+    del.textContent = '✕'; del.className = 'text-gray-300 hover:text-red-500 text-sm';
+    del.setAttribute('aria-label', c.title + ' 削除');
+    del.onclick = () => deleteContent(c.id);
+    right.appendChild(sel); right.appendChild(del);
+    card.appendChild(left); card.appendChild(right);
+    list.appendChild(card);
+  });
+}
+
+function renderCalendar() {
+  const title = document.getElementById('calendarTitle');
+  title.textContent = calendarYear + '年 ' + (calendarMonth + 1) + '月';
+  const grid = document.getElementById('calendarGrid');
+  grid.innerHTML = '';
+  const dayNames = ['日','月','火','水','木','金','土'];
+  const header = document.createElement('div');
+  header.className = 'grid grid-cols-7 gap-1 mb-1';
+  dayNames.forEach(d => {
+    const cell = document.createElement('div');
+    cell.className = 'text-center text-xs font-semibold text-gray-400 py-1';
+    cell.textContent = d;
+    header.appendChild(cell);
+  });
+  grid.appendChild(header);
+
+  const firstDay = new Date(calendarYear, calendarMonth, 1).getDay();
+  const daysInMonth = new Date(calendarYear, calendarMonth + 1, 0).getDate();
+  const today = new Date();
+  const filtered = getFiltered();
+
+  const calGrid = document.createElement('div');
+  calGrid.className = 'grid grid-cols-7 gap-1';
+
+  for (let i = 0; i < firstDay; i++) {
+    const empty = document.createElement('div');
+    empty.className = 'cal-day bg-gray-50 rounded-lg p-1';
+    calGrid.appendChild(empty);
+  }
+
+  for (let d = 1; d <= daysInMonth; d++) {
+    const dateStr = calendarYear + '-' + String(calendarMonth+1).padStart(2,'0') + '-' + String(d).padStart(2,'0');
+    const dayContents = filtered.filter(c => c.date === dateStr);
+    const isToday = today.getFullYear() === calendarYear && today.getMonth() === calendarMonth && today.getDate() === d;
+    const cell = document.createElement('div');
+    cell.className = 'cal-day rounded-lg p-1 border ' + (isToday ? 'border-indigo-400 bg-indigo-50' : 'border-gray-100 bg-white hover:bg-gray-50');
+    const dateNum = document.createElement('div');
+    dateNum.className = 'text-xs font-semibold mb-1 ' + (isToday ? 'text-indigo-600' : 'text-gray-500');
+    dateNum.textContent = d;
+    cell.appendChild(dateNum);
+    dayContents.forEach(c => {
+      const dot = document.createElement('div');
+      dot.className = 'text-xs truncate rounded px-1 mb-0.5 ' + (PLATFORM_COLORS[c.platform] || 'bg-gray-100 text-gray-600');
+      dot.textContent = c.title;
+      dot.title = c.title + ' [' + c.platform + '/' + c.status + ']';
+      cell.appendChild(dot);
+    });
+    calGrid.appendChild(cell);
+  }
+  grid.appendChild(calGrid);
+}
+
+render();
+</script>
+</body>
+</html>
